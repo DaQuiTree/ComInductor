@@ -114,18 +114,19 @@ void MainWindow::HandlingReadDataSlot()
         buffer = mSerialPort->readAll();
         if(0x55 == buffer[1]) //校验通过...
         {
-            yd[buffer[0]-1].GetData(mv,cv,bc);
-            cmdRead = QByteArray::fromHex("30301100008F0000000000000000000000000000000000000000000000000020000C0000000401518D");
-            cmdRead[4] = (uchar)(mv>>8);
-            cmdRead[5] = (uchar)mv;
-            cmdRead[36] = (uchar)(cv>>8);
-            cmdRead[37] = (uchar)cv;
-            cmdRead[38] =(uchar)buffer[0];
-            crcCheck = generic_crc(39,(unsigned char*)cmdRead.data());
-            qDebug() << crcCheck;
-            cmdRead[39] = (uchar)crcCheck;
-            cmdRead[40] = (uchar)(crcCheck>>8);
-            mSerialPort->write(cmdRead);
+            if(ui->panelTable->item(buffer[0]-1,2)->checkState() == Qt::Unchecked){
+                yd[buffer[0]-1].GetData(mv,cv,bc);
+                cmdRead = QByteArray::fromHex("30301100008F0000000000000000000000000000000000000000000000000020000C0000000401518D");
+                cmdRead[4] = (uchar)(mv>>8);
+                cmdRead[5] = (uchar)mv;
+                cmdRead[36] = (uchar)(cv>>8);
+                cmdRead[37] = (uchar)cv;
+                cmdRead[38] =(uchar)buffer[0];
+                crcCheck = generic_crc(39,(unsigned char*)cmdRead.data());
+                cmdRead[39] = (uchar)crcCheck;
+                cmdRead[40] = (uchar)(crcCheck>>8);
+                mSerialPort->write(cmdRead);
+            }
         }
     }
 
@@ -161,7 +162,7 @@ void MainWindow::FillTable()
         }
         str1.insert(0,"30301100");
         item->setText(str1.toUpper());
-        item->setTextAlignment(Qt::AlignRight);
+        item->setTextAlignment(Qt::AlignCenter);
         ui->panelTable->setItem(i,0,item);
 
         item = new QTableWidgetItem();
@@ -170,7 +171,11 @@ void MainWindow::FillTable()
             str2.insert(0,"0");
         }
         item->setText(str2.toUpper());
-        item->setTextAlignment(Qt::AlignRight);
+        item->setTextAlignment(Qt::AlignCenter);
         ui->panelTable->setItem(i,1,item);
+
+        item = new QTableWidgetItem();
+        item->setCheckState(Qt::Unchecked);
+        ui->panelTable->setItem(i,2,item);
     }
 }
